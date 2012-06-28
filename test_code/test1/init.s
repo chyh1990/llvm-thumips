@@ -16,6 +16,6 @@ start:
 
 .section .bss
 stack:
-  .STACKSIZE
+  .space STACKSIZE
 
 
