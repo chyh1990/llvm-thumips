@@ -73,12 +73,31 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
               I->getOperand(0).getReg())
         .addReg(Mips::V0).addReg(I->getOperand(1).getReg());
       break;
+      /*  
+    case Mips::SB:
+      //I->dump();
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SW)).addOperand(I->getOperand(0))
+        .addReg(Mips::K0).addOperand(I->getOperand(2));
+      break;*/
+    case Mips::B:
+      //I->dump();
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::BGEZ)).addReg(Mips::ZERO).addOperand(I->getOperand(0));
+      break;
+    case Mips::EXT:
+    case Mips::INS:
+    case Mips::RDHWR:
+    case Mips::MUL:
+      I->dump();
+      ++I;
+      continue;
+      /*
     case Mips::BuildPairF64:
       ExpandBuildPairF64(MBB, I);
       break;
     case Mips::ExtractElementF64:
       ExpandExtractElementF64(MBB, I);
       break;
+      */
     }
 
     // delete original instr
@@ -89,6 +108,7 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
   return Changed;
 }
 
+/*
 void MipsExpandPseudo::ExpandBuildPairF64(MachineBasicBlock& MBB,
                                             MachineBasicBlock::iterator I) {
   unsigned DstReg = I->getOperand(0).getReg();
@@ -115,6 +135,7 @@ void MipsExpandPseudo::ExpandExtractElementF64(MachineBasicBlock& MBB,
 
   BuildMI(MBB, I, dl, Mfc1Tdd, DstReg).addReg(*(SubReg + N));
 }
+*/
 
 /// createMipsMipsExpandPseudoPass - Returns a pass that expands pseudo
 /// instrs into real instrs

@@ -456,6 +456,7 @@ SDNode* MipsDAGToDAGISel::Select(SDNode *Node) {
   case ISD::GLOBAL_OFFSET_TABLE:
     return getGlobalBaseReg();
 
+    /*
   case ISD::ConstantFP: {
     ConstantFPSDNode *CN = dyn_cast<ConstantFPSDNode>(Node);
     if (Node->getValueType(0) == MVT::f64 && CN->isExactlyValue(+0.0)) {
@@ -472,6 +473,7 @@ SDNode* MipsDAGToDAGISel::Select(SDNode *Node) {
     }
     break;
   }
+  */
 
   case ISD::Constant: {
     const ConstantSDNode *CN = dyn_cast<ConstantSDNode>(Node);

@@ -940,8 +940,8 @@ def BLTZ    : CBranchZero<0x01, 0, "bltz", setlt, CPURegs>;
 
 def JAL  : JumpLink<0x03, "jal">;
 def JALR : JumpLinkReg<0x00, 0x09, "jalr", CPURegs>;
-def BGEZAL  : BranchLink<"bgezal", 0x11, CPURegs>;
-def BLTZAL  : BranchLink<"bltzal", 0x10, CPURegs>;
+//def BGEZAL  : BranchLink<"bgezal", 0x11, CPURegs>;
+//def BLTZAL  : BranchLink<"bltzal", 0x10, CPURegs>;
 
 let isReturn=1, isTerminator=1, hasDelaySlot=1, isCodeGenOnly=1,
     isBarrier=1, hasCtrlDep=1, rd=0, rt=0, shamt=0 in
@@ -960,15 +960,15 @@ def MFHI : MoveFromLOHI<0x10, "mfhi", CPURegs, [HI]>;
 def MFLO : MoveFromLOHI<0x12, "mflo", CPURegs, [LO]>;
 
 /// Sign Ext In Register Instructions.
-def SEB : SignExtInReg<0x10, "seb", i8, CPURegs>;
-def SEH : SignExtInReg<0x18, "seh", i16, CPURegs>;
+//def SEB : SignExtInReg<0x10, "seb", i8, CPURegs>;
+//def SEH : SignExtInReg<0x18, "seh", i16, CPURegs>;
 
 /// Count Leading
-def CLZ : CountLeading0<0x20, "clz", CPURegs>;
-def CLO : CountLeading1<0x21, "clo", CPURegs>;
+//def CLZ : CountLeading0<0x20, "clz", CPURegs>;
+//def CLO : CountLeading1<0x21, "clo", CPURegs>;
 
 /// Word Swap Bytes Within Halfwords
-def WSBH : SubwordSwap<0x20, 0x2, "wsbh", CPURegs>;
+//def WSBH : SubwordSwap<0x20, 0x2, "wsbh", CPURegs>;
 
 /// No operation
 let addr=0 in
@@ -991,10 +991,10 @@ def DynAlloc : EffectiveAddress<"addiu\t$rt, $addr", CPURegs, mem_ea> {
 }
 
 // MADD*/MSUB*
-def MADD  : MArithR<0, "madd", MipsMAdd, 1>;
-def MADDU : MArithR<1, "maddu", MipsMAddu, 1>;
-def MSUB  : MArithR<4, "msub", MipsMSub>;
-def MSUBU : MArithR<5, "msubu", MipsMSubu>;
+//def MADD  : MArithR<0, "madd", MipsMAdd, 1>;
+//def MADDU : MArithR<1, "maddu", MipsMAddu, 1>;
+//def MSUB  : MArithR<4, "msub", MipsMSub>;
+//def MSUBU : MArithR<5, "msubu", MipsMSubu>;
 
 // MUL is a assembly macro in the current used ISAs. In recent ISA's
 // it is a real instruction.
@@ -1182,10 +1182,10 @@ defm : SetgePats<CPURegs, SLT, SLTu>;
 defm : SetgeImmPats<CPURegs, SLTi, SLTiu>;
 
 // select MipsDynAlloc
-def : Pat<(MipsDynAlloc addr:$f), (DynAlloc addr:$f)>;
+//def : Pat<(MipsDynAlloc addr:$f), (DynAlloc addr:$f)>;
 
 // bswap pattern
-def : Pat<(bswap CPURegs:$rt), (ROTR (WSBH CPURegs:$rt), 16)>;
+//def : Pat<(bswap CPURegs:$rt), (ROTR (WSBH CPURegs:$rt), 16)>;
 
 //===----------------------------------------------------------------------===//
 // Floating Point Support
@@ -1193,5 +1193,5 @@ def : Pat<(bswap CPURegs:$rt), (ROTR (WSBH CPURegs:$rt), 16)>;
 
 include "MipsInstrFPU.td"
 include "Mips64InstrInfo.td"
-include "MipsCondMov.td"
+//include "MipsCondMov.td"
 
