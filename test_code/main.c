@@ -26,10 +26,14 @@ int main() {
   char test[] = "That is good";
   int i;
   for(i = 0; i < 5; i++) {
-    test[i] += add(i,i);
+    test[i] += test[i] + add(i,i) +33;
     if(i == 3)
-      break;
+      test[i]=66;
+    else
+      test[i]=99;
   }
+  i = i*i;
+  i += 23;
 
   return 0;
 }

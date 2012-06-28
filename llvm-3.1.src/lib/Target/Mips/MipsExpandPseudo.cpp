@@ -80,13 +80,63 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
         .addReg(Mips::K0).addOperand(I->getOperand(2));
       break;*/
     case Mips::B:
-      //I->dump();
+      I->dump();
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::BGEZ)).addReg(Mips::ZERO).addOperand(I->getOperand(0));
       break;
+    //stupid byte operations
+    case Mips::LB:
+    case Mips::LBu:
+    case Mips::LH:
+    case Mips::LHu:
+    case Mips::SB:
+    case Mips::SH:
+    case Mips::ULH:
+    case Mips::ULHu:
+    case Mips::ULW:
+    case Mips::USH:
+    case Mips::USW:
+    case Mips::LWL:
+    case Mips::LWR:
+    case Mips::SWL:
+    case Mips::SWR:
+    case Mips::SYNC:
+    case Mips::LL:
+    case Mips::LL_P8:
+    case Mips::SC:
+    case Mips::SC_P8:
+
+    /*
+    case Mips::MULT:
+    case Mips::MULT:
+    case Mips::MULTu:
+    case Mips::SDIV:
+    case Mips::UDIV:
+    case Mips::MTHI:
+    case Mips::MTLO:
+    case Mips::MFHI:
+    case Mips::MFLO:
+    */
+
+    //no operations? exists?
+    //case Mips::NOP:
+    
+
+    case Mips::ROTR:
+    case Mips::ROTRV:
     case Mips::EXT:
     case Mips::INS:
     case Mips::RDHWR:
     case Mips::MUL:
+    case Mips::MULT:
+    case Mips::MULTu:
+    case Mips::SDIV:
+    case Mips::UDIV:
+    case Mips::MTHI:
+    case Mips::MTLO:
+    case Mips::MFHI:
+    case Mips::MFLO:
+    case Mips::LEA_ADDiu:
+
       I->dump();
       ++I;
       continue;

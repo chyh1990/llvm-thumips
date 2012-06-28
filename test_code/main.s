@@ -51,28 +51,40 @@ $tmp2:
 	.ent	main                    # @main
 main:
 	.cfi_startproc
-	.frame	$sp,64,$ra
-	.mask 	0x80030000,-4
+	.frame	$sp,80,$ra
+	.mask 	0x803f0000,-4
 	.fmask	0x00000000,0
 	.set	noreorder
 	.cpload	$25
 	.set	nomacro
 # BB#0:
-	addiu	$sp, $sp, -64
+	addiu	$sp, $sp, -80
 $tmp5:
-	.cfi_def_cfa_offset 64
-	sw	$ra, 60($sp)            # 4-byte Folded Spill
+	.cfi_def_cfa_offset 80
+	sw	$ra, 76($sp)            # 4-byte Folded Spill
+	sw	$21, 72($sp)            # 4-byte Folded Spill
+	sw	$20, 68($sp)            # 4-byte Folded Spill
+	sw	$19, 64($sp)            # 4-byte Folded Spill
+	sw	$18, 60($sp)            # 4-byte Folded Spill
 	sw	$17, 56($sp)            # 4-byte Folded Spill
 	sw	$16, 52($sp)            # 4-byte Folded Spill
 $tmp6:
 	.cfi_offset 31, -4
 $tmp7:
-	.cfi_offset 17, -8
+	.cfi_offset 21, -8
 $tmp8:
-	.cfi_offset 16, -12
+	.cfi_offset 20, -12
+$tmp9:
+	.cfi_offset 19, -16
+$tmp10:
+	.cfi_offset 18, -20
+$tmp11:
+	.cfi_offset 17, -24
+$tmp12:
+	.cfi_offset 16, -28
 	.cprestore	16
 	sw	$zero, 48($sp)
-	sw	$zero, 44($26)
+	sb	$zero, 44($sp)
 	lui	$2, 25711
 	ori	$2, $2, 28519
 	sw	$2, 40($sp)
@@ -85,46 +97,73 @@ $tmp8:
 	sw	$zero, 28($sp)
 	addiu	$16, $zero, 4
 	addiu	$17, $zero, 3
+	addiu	$18, $zero, 66
+	addiu	$19, $zero, 99
 	b	$BB1_1
 	nop
-$BB1_3:                                 #   in Loop: Header=BB1_1 Depth=1
+$BB1_5:                                 #   in Loop: Header=BB1_1 Depth=1
 	lw	$2, 28($sp)
 	addiu	$2, $2, 1
 	sw	$2, 28($sp)
 $BB1_1:                                 # =>This Inner Loop Header: Depth=1
 	lw	$2, 28($sp)
 	slt	$2, $16, $2
-	bne	$2, $zero, $BB1_4
+	bne	$2, $zero, $BB1_6
 	nop
 # BB#2:                                 #   in Loop: Header=BB1_1 Depth=1
 	lw	$5, 28($sp)
+	addiu	$20, $sp, 32
+	addu	$2, $20, $5
+	lbu	$21, 0($2)
 	lw	$25, %call16(add)($gp)
 	addu	$4, $zero, $5
 	jalr	$25
 	nop
 	lw	$gp, 16($sp)
-	addiu	$3, $sp, 32
-	lw	$4, 28($sp)
-	addu	$3, $3, $4
-	lbu	$4, 0($3)
-	addu	$2, $4, $2
-	sw	$2, 0($26)
+	addu	$2, $21, $2
+	lw	$3, 28($sp)
+	addu	$3, $20, $3
+	lb	$4, 0($3)
+	addu	$2, $2, $4
+	addiu	$2, $2, 33
+	sb	$2, 0($3)
 	lw	$2, 28($sp)
-	bne	$2, $17, $BB1_3
+	bne	$2, $17, $BB1_4
 	nop
-$BB1_4:
+# BB#3:                                 #   in Loop: Header=BB1_1 Depth=1
+	lw	$2, 28($sp)
+	addu	$2, $20, $2
+	sb	$18, 0($2)
+	bgez	$zero, $BB1_5
+	nop
+$BB1_4:                                 #   in Loop: Header=BB1_1 Depth=1
+	lw	$2, 28($sp)
+	addu	$2, $20, $2
+	sb	$19, 0($2)
+	b	$BB1_5
+	nop
+$BB1_6:
+	lw	$2, 28($sp)
+	mul	$2, $2, $2
+	sw	$2, 28($sp)
+	addiu	$2, $2, 23
+	sw	$2, 28($sp)
 	addu	$2, $zero, $zero
 	lw	$16, 52($sp)            # 4-byte Folded Reload
 	lw	$17, 56($sp)            # 4-byte Folded Reload
-	lw	$ra, 60($sp)            # 4-byte Folded Reload
-	addiu	$sp, $sp, 64
+	lw	$18, 60($sp)            # 4-byte Folded Reload
+	lw	$19, 64($sp)            # 4-byte Folded Reload
+	lw	$20, 68($sp)            # 4-byte Folded Reload
+	lw	$21, 72($sp)            # 4-byte Folded Reload
+	lw	$ra, 76($sp)            # 4-byte Folded Reload
+	addiu	$sp, $sp, 80
 	jr	$ra
 	nop
 	.set	macro
 	.set	reorder
 	.end	main
-$tmp9:
-	.size	main, ($tmp9)-main
+$tmp13:
+	.size	main, ($tmp13)-main
 	.cfi_endproc
 
 	.type	$main.test,@object      # @main.test

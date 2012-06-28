@@ -3,7 +3,7 @@ CFLAGS=-O0 -emit-llvm -c -g
 LLVM_BIN=~/cpu/llvm-thumips/llvm-3.1.src/Release+Asserts/bin
 LLC=$(LLVM_BIN)/llc -march=mipsel
 GCC_PREFIX=mips-sde-elf-
-AS=$(GCC_PREFIX)as -EL -g -mips2
+AS=$(GCC_PREFIX)as -EL -g -mips32 -xgot
 LD=$(GCC_PREFIX)ld
 
 all: a.out
