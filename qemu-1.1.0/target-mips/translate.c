@@ -11935,6 +11935,8 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
         default:            /* Invalid */
             MIPS_INVAL("special");
             generate_exception(ctx, EXCP_RI);
+            fprintf(stderr, "THUCPU-ERR special opcode: 0x%08x, op=0x%02x, rs=0x%02x, rd=0x%02x,"
+               " rt=0x%02x, imm=0x%04x\n", ctx->opcode, op >> 26, rs, rd, rt, imm);
             break;
         }
         break;
@@ -12242,6 +12244,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
 #else  /* THU CPU */
     case OPC_LW:
     case OPC_LB:
+    case OPC_LBU:
          gen_ld(env, ctx, op, rt, rs, imm);
          break;
     case OPC_SW:

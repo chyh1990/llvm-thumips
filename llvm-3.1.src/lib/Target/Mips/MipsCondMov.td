@@ -22,6 +22,7 @@ class CondMovIntInt<RegisterClass CRC, RegisterClass DRC, bits<6> funct,
      !strconcat(instr_asm, "\t$rd, $rs, $rt"), [], NoItinerary> {
   let shamt = 0;
   let Constraints = "$F = $rd";
+  let usesCustomInserter = 1;
 }
 
 // cond:int, data:float

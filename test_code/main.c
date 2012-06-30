@@ -24,7 +24,8 @@ int add(int a, int b) {
 
 int main() {
   char test[] = "That is good";
-  int i;
+  long long g, i;
+  short sht = 0;
   for(i = 0; i < 5; i++) {
     test[i] += test[i] + add(i,i) +33;
     if(i == 3)
@@ -32,7 +33,8 @@ int main() {
     else
       test[i]=99;
   }
-  i = i*i;
+  sht = sht-12;
+  g = i*i*77;
   i += 23;
 
   return 0;

@@ -1193,5 +1193,5 @@ defm : SetgeImmPats<CPURegs, SLTi, SLTiu>;
 
 include "MipsInstrFPU.td"
 include "Mips64InstrInfo.td"
-//include "MipsCondMov.td"
+include "MipsCondMov.td"
 
