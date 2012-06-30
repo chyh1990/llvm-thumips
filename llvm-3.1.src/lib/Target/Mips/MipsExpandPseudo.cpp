@@ -116,10 +116,35 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K0).addOperand(I->getOperand(1)).addImm(1);
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SB)).addReg(Mips::K1).addReg(Mips::K0).addOperand(I->getOperand(2));
       break;
-    case Mips::ULW:
+    //case Mips::ULW:
     //unfold to four bytes load operations
-    case Mips::USW:
+      /*
+       * lbu $t, offset($s)
+       * addiu k0, $s, 1
+       * lbu k1, offset(k0)
+       * sll k1, k1, 8
+       * or $t, $t, k1
+       * addiu k0, $s, 2
+       * lbu k1, offset(k0)
+       * sll k1, k1, 16
+       * or $t, $t, k1
+       * addiu k0, $s, 3
+       * lbu k1, offset(k0)
+       * sll k1, k1, 24
+       * or $t, $t, k1
+       */
+      /* 
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LBu)).addOperand(I->getOperand(0)).getOperand(I->getOperand(1)).getOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K0).addOperand(I->getOperand(0)).addImm(1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LBu)).addReg(Mips::K1).addReg(Mips::K0).addOperand(2);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::)
+      */
+       
+    //  break;
+    //case Mips::USW:
     //unfold to four bytes store operations
+
+    //  break;
     case Mips::LWL:
     case Mips::LWR:
     case Mips::SWL:
