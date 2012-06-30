@@ -11684,6 +11684,9 @@ static int decode_micromips_opc (CPUMIPSState *env, DisasContext *ctx, int *is_b
 
 #endif
 
+#define PRINT_ERR_INSTR(info)            fprintf(stderr, "THUCPU-ERR " info ", pc=0x%08x, opcode: 0x%08x, op=0x%02x, rs=0x%02x, rd=0x%02x,"  \
+               " rt=0x%02x, imm=0x%04x\n", ctx->pc, ctx->opcode, op >> 26, rs, rd, rt, imm);
+
 static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
 {
     int32_t offset;
@@ -11783,6 +11786,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
         case OPC_XOR:
             gen_logic(env, op1, rd, rs, rt);
             break;
+#ifndef THU_MIPS_CPU
         case OPC_MULT ... OPC_DIVU:
             if (sa) {
                 check_insn(env, ctx, INSN_VR54XX);
@@ -11791,6 +11795,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
             } else
                 gen_muldiv(ctx, op1, rs, rt);
             break;
+#endif /* !THU_MIPS_CPU mult div */
         case OPC_JR ... OPC_JALR:
             gen_compute_branch(ctx, op1, 4, rs, rd, sa);
             *is_branch = 1;
@@ -11935,8 +11940,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
         default:            /* Invalid */
             MIPS_INVAL("special");
             generate_exception(ctx, EXCP_RI);
-            fprintf(stderr, "THUCPU-ERR special opcode: 0x%08x, op=0x%02x, rs=0x%02x, rd=0x%02x,"
-               " rt=0x%02x, imm=0x%04x\n", ctx->opcode, op >> 26, rs, rd, rt, imm);
+            PRINT_ERR_INSTR("special0");
             break;
         }
         break;
@@ -12105,8 +12109,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
 #endif
         default:            /* Invalid */
             MIPS_INVAL("regimm");
-            fprintf(stderr, "THUCPU-ERR regimm opcode: 0x%08x, op=0x%02x, rs=0x%02x, rd=0x%02x,"
-               " rt=0x%02x, imm=0x%04x\n", ctx->opcode, op >> 26, rs, rd, rt, imm);
+            PRINT_ERR_INSTR("regimm");
             generate_exception(ctx, EXCP_RI);
             break;
         }
@@ -12419,8 +12422,7 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
     default:            /* Invalid */
         MIPS_INVAL("major opcode");
         generate_exception(ctx, EXCP_RI);
-        fprintf(stderr, "THUCPU-ERR opcode: 0x%08x, op=0x%02x, rs=0x%02x, rd=0x%02x,"
-            " rt=0x%02x, imm=0x%04x\n", ctx->opcode, op >> 26, rs, rd, rt, imm);
+        PRINT_ERR_INSTR("major");
         break;
     }
 }
