@@ -17,11 +17,6 @@ void setup_exception_vector()
       &__exception_vector_end - &__exception_vector);
 }
 
-void test_trap()
-{
-  cputchar('F');
-  while(1);
-}
 
 void __noreturn
 kern_init(void) {
@@ -33,6 +28,10 @@ kern_init(void) {
     cprintf(message);
 
     print_kerninfo();
+
+    cprintf("EX\n");
+    __asm__ volatile("syscall");
+    cprintf("EX RET\n");
 
     pmm_init();                 // init physical memory management
 

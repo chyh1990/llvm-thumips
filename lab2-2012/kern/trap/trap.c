@@ -1,4 +1,5 @@
 #include <defs.h>
+#include <asm/mipsregs.h>
 #include <clock.h>
 #include <trap.h>
 #include <thumips.h>
@@ -12,101 +13,102 @@
 #define TICK_NUM 100
 #define PRINT_HEX(str,x) {cprintf(str);printhex((unsigned int)x);cprintf("\n");}
 
+#define GET_CAUSE_EXCODE(x)   ( ((x) & CAUSEF_EXCCODE) >> CAUSEB_EXCCODE)
+
 static void print_ticks() {
     PRINT_HEX("%d ticks\n",TICK_NUM);
 }
 
 
-void
-idt_init(void) {
-
-}
 
 static const char *
 trapname(int trapno) {
     static const char * const excnames[] = {
-        "Divide error",
-        "Debug",
-        "Non-Maskable Interrupt",
+        "Interrupt",
+        "TLB Modify",
+        "TLB miss on load",
+        "TLB miss on store",
+        "Address error on load",
+        "Address error on store",
+        "Bus error on instruction fetch",
+        "Bus error on data load or store",
+        "Syscall",
         "Breakpoint",
-        "Overflow",
-        "BOUND Range Exceeded",
-        "Invalid Opcode",
-        "Device Not Available",
-        "Double Fault",
-        "Coprocessor Segment Overrun",
-        "Invalid TSS",
-        "Segment Not Present",
-        "Stack Fault",
-        "General Protection",
-        "Page Fault",
-        "(unknown trap)",
-        "x87 FPU Floating-Point Error",
-        "Alignment Check",
-        "Machine-Check",
-        "SIMD Floating-Point Exception"
+        "Reserved (illegal) instruction",
+        "Coprocessor unusable",
+        "Arithmetic overflow",
     };
-
-    if (trapno < sizeof(excnames)/sizeof(const char * const)) {
-        return excnames[trapno];
-    }
-    if (trapno >= IRQ_OFFSET && trapno < IRQ_OFFSET + 16) {
-        return "Hardware Interrupt";
-    }
-    return "(unknown trap)";
+    if(trapno <= 12)
+      return excnames[trapno];
+    else
+      return "Unknown";
 }
 
 bool
 trap_in_kernel(struct trapframe *tf) {
-    return (tf->tf_cs == (uint16_t)KERNEL_CS);
+  return !(tf->tf_status & ST0_KUP);
 }
 
-static const char *IA32flags[] = {
-    "CF", NULL, "PF", NULL, "AF", NULL, "ZF", "SF",
-    "TF", "IF", "DF", "OF", NULL, NULL, "NT", NULL,
-    "RF", "VM", "AC", "VIF", "VIP", "ID", NULL, NULL,
-};
+
+void print_regs(struct pushregs *regs)
+{
+  int i;
+  for (i = 0; i < 30; i++) {
+    cprintf(" $");
+    printbase10(i+1);
+    cprintf("\t: ");
+    printhex(regs->reg_r[i]);
+    cputchar('\n');
+  }
+}
 
 void
 print_trapframe(struct trapframe *tf) {
     PRINT_HEX("trapframe at ", tf);
     print_regs(&tf->tf_regs);
- 
-    int i, j;
-    for (i = 0, j = 1; i < sizeof(IA32flags) / sizeof(IA32flags[0]); i ++, j <<= 1) {
-        if ((tf->tf_eflags & j) && IA32flags[i] != NULL) {
-            cprintf(IA32flags[i]);
-        }
-    }
-    cprintf("IOPL=%d\n");
-
+    PRINT_HEX(" $ra\t: ", tf->tf_ra);
+    PRINT_HEX(" BadVA\t: ", tf->tf_vaddr);
+    PRINT_HEX(" Status\t: ", tf->tf_status);
+    PRINT_HEX(" Cause\t: ", tf->tf_cause);
+    PRINT_HEX(" EPC\t: ", tf->tf_epc);
     if (!trap_in_kernel(tf)) {
+      cprintf("Trap in usermode: ");
+    }else{
+      cprintf("Trap in kernel: ");
     }
+    cprintf(trapname(GET_CAUSE_EXCODE(tf->tf_cause)));
+    cputchar('\n');
 }
 
-void
-print_regs(struct pushregs *regs) {
-  cprintf("PRINT_REGS\n");
-}
 
 static void
 trap_dispatch(struct trapframe *tf) {
-    char c;
-
-    switch (tf->tf_trapno) {
-
+  int code = GET_CAUSE_EXCODE(tf->tf_cause);
+  switch(code){
+    case EX_RI:
+      print_trapframe(tf);
+      while(1);
+      break;
+    case EX_SYS:
+      print_trapframe(tf);
+      tf->tf_epc += 4;
+      break;
     default:
-        // in kernel, it must be a mistake
-        if ((tf->tf_cs & 3) == 0) {
-            print_trapframe(tf);
-            panic("unexpected trap in kernel.\n");
-        }
-    }
+      print_trapframe(tf);
+      while(1);
+  }
+
 }
 
+
+/*
+ * General trap (exception) handling function for mips.
+ * This is called by the assembly-language exception handler once
+ * the trapframe has been set up.
+ */
 void
-trap(struct trapframe *tf) {
-    // dispatch based on what type of trap occurred
-    trap_dispatch(tf);
+mips_trap(struct trapframe *tf)
+{
+  trap_dispatch(tf);
 }
 

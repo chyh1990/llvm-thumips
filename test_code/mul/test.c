@@ -16,11 +16,13 @@
  * =====================================================================================
  */
 
-void mul1()
+void mul1(long long aa)
 {
   int a = 3, b= 5;
   int c = a *b;
   int d = a*4;
+  long long ll = 0x23423423;
+  ll = ll * aa;
 }
 
 struct foo{
@@ -39,7 +41,7 @@ int mul2(int idx){
 
 int main()
 {
-  mul1();
+  mul1(0x342342);
   mul2(2);
   return 0;
 }

@@ -55,7 +55,6 @@ serial_init(void) {
     *(uart+4) = 0x0b;
 
     if (serial_exists) {
-      pic_enable(IRQ_COM1);
     }
 }
 

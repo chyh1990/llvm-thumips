@@ -1,90 +1,52 @@
 /*
  * Entry points for exceptions
  */
-   
-#include <machine/asmdefs.h>
-#include <machine/specialreg.h>
+#include <asm/regdef.h>
+#include <asm/mipsregs.h> 
 
+.extern mips_trap
    /* 
     * Do not allow the assembler to use $1 (at), because we need to be
     * able to save it.
     */
    .set noat
    .set noreorder
+   .section .text
+# +0x000: R4000 tlbmiss vector
+.global ramExcHandle_tlbmiss
+ramExcHandle_tlbmiss:
+  b ramExcHandle_tlbmiss
+  nop
 
-/****************************************************/
-/*                                                  */
-/* UTLB exception handler                           */
-/*                                                  */
-/* This code is copied to address 0x80000000, where */ 
-/* the MIPS processor automatically invokes it.     */
-/* To avoid colliding with the other exception code,*/
-/* it must not exceed 128 bytes (32 instructions).  */
-/*                                                  */
-/****************************************************/
- 
-   .text
-   .globl utlb_exception
-   .type utlb_exception,@function
-   .ent utlb_exception
-utlb_exception:
+.global ramReserved
+ramReserved:
+  b ramReserved
+  nop
+
+# +0x180: R4000 general vector
+  .global ramExcHandle_general
+  .type ramExcHandle_general, @function
+  .ent ramExcHandle_general
+ramExcHandle_general:
    move k1, sp			/* Save previous stack pointer in k1 */
-   mfc0 k0, c0_status		/* Get status register */
-   andi k0, k0, CST_KUp		/* Check the we-were-in-user-mode bit */
+   mfc0 k0, CP0_STATUS /* Get status register */
+   andi k0, k0, ST0_KUP/* Check the we-were-in-user-mode bit */
    beq	k0, $0, 1f		/* If clear, from kernel, already have stack */
    nop				/* delay slot */
    
+   /* TODO */
    /* Coming from user mode - load kernel stack into sp */
-   la k0, curkstack		/* get address of "curkstack" */
-   lw sp, 0(k0)			/* get its value */
+   #la k0, curkstack		/* get address of "curkstack" */
+   #lw sp, 0(k0)			/* get its value */
    nop				/* delay slot for the load */
   
 1:
-   mfc0 k0, c0_cause		/* Now, load the exception cause */
-   ori k0, k0, 1		/* Set bit 0 to mark it as utlb exception */
-   j common_exception		/* Skip to common code */
-   nop				/* delay slot */
-   .globl utlb_exception_end
-utlb_exception_end:
-   .end utlb_exception
-
-/****************************************************/
-/*                                                  */
-/* General exception handler                        */
-/*                                                  */
-/* This code is copied to address 0x80000080, where */ 
-/* the MIPS processor automatically invokes it.     */
-/*                                                  */
-/****************************************************/
-      
-   .text
-   .globl exception
-   .type exception,@function
-   .ent exception
-exception:
-   move k1, sp			/* Save previous stack pointer in k1 */
-   mfc0 k0, c0_status		/* Get status register */
-   andi k0, k0, CST_KUp		/* Check the we-were-in-user-mode bit */
-   beq	k0, $0, 1f		/* If clear, from kernel, already have stack */
-   nop				/* delay slot */
-   
-   /* Coming from user mode - load kernel stack into sp */
-   la k0, curkstack		/* get address of "curkstack" */
-   lw sp, 0(k0)			/* get its value */
-   nop				/* delay slot for the load */
-  
-1:
-   mfc0 k0, c0_cause		/* Now, load the exception cause. */
+   mfc0 k0, CP0_CAUSE /* Now, load the exception cause. */
    j common_exception		/* Skip to common code */
    nop				/* delay slot */
 
-   .globl exception_end
-exception_end:
-   .end exception
-
-   /* This keeps gdb from conflating common_exception and exception_end */
-   nop				/* padding */
-
+ramExcHandle_general_end:
+  .end ramExcHandle_general
 
 /****************************************************/
 /*                                                  */
@@ -148,7 +110,7 @@ common_exception:
    sw k1, 152(sp)	/* real saved sp */
    nop			/* delay slot for store */
    
-   mfc0 k1, c0_epc	/* Copr.0 reg 13 == PC for exception */
+   mfc0 k1, CP0_EPC /* Copr.0 reg 13 == PC for exception */
    sw k1, 160(sp)	/* real saved PC */
 
    sw t9, 136(sp)
@@ -192,9 +154,9 @@ common_exception:
     */
 
    sw   k0, 24(sp)               /* k0 was loaded with cause earlier */
-   mfc0 t1, c0_status            /* Copr.0 reg 11 == status */
+   mfc0 t1, CP0_STATUS /* Copr.0 reg 11 == status */
    sw   t1, 20(sp)
-   mfc0 t2, c0_vaddr             /* Copr.0 reg 8 == faulting vaddr */
+   mfc0 t2, CP0_BADVADDR /* Copr.0 reg 8 == faulting vaddr */
    sw   t2, 16(sp)
 
    /*
@@ -207,7 +169,8 @@ common_exception:
     */
 
    addiu a0, sp, 16             /* set argument */
-   jal mips_trap		/* call it */
+   la  t9, mips_trap
+   jal t9 /* call it */
    nop				/* delay slot */
 
    /* Something must be here or gdb doesn't find the stack frame. */
@@ -222,7 +185,7 @@ exception_return:
    /*     16(sp)		   no need to restore tf_vaddr */
    lw t0, 20(sp)		/* load status register value into t0 */
    nop				/* load delay slot */
-   mtc0 t0, c0_status		/* store it back to coprocessor 0 */
+   mtc0 t0, CP0_STATUS /* store it back to coprocessor 0 */
    /*     24(sp)		   no need to restore tf_cause */
 
    /* restore special registers */
@@ -269,37 +232,12 @@ exception_return:
    lw k0, 160(sp)		/* fetch exception return PC into k0 */
 
    lw sp, 152(sp)		/* fetch saved sp (must be last) */
-   
    /* done */
-   jr k0			/* jump back */
-   rfe				/* in delay slot */
+
+   mtc0 k0, CP0_EPC /* Copr.0 reg 13 == PC for exception */
+   nop
+   eret
+   nop
    .end common_exception 
 
-/****************************************************/
-/*                                                  */
-/* Code to enter user mode for the first time       */
-/*                                                  */
-/* This must be called from md_usermode.            */
-/* Interrupts should be off.                        */
-/*                                                  */
-/****************************************************/
 
-   .text
-   .globl asm_usermode
-   .type asm_usermode,@function
-   .ent asm_usermode
-asm_usermode:
-   /*
-    * a0 is the address of a trapframe to use for exception "return".
-    * It's allocated on our stack.
-    *
-    * Move it to the stack pointer - we don't need the actual stack
-    * position any more. (When we come back from usermode, curkstack
-    * will be used to reinitialize our stack pointer.)
-    *
-    * Then just jump to the exception return code above.
-    */
-
-   j exception_return
-   addiu sp, a0, -16		/* in delay slot */
-   .end asm_usermode

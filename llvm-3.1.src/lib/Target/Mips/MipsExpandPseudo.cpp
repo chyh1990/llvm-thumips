@@ -97,12 +97,12 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
     case Mips::ULH:
     case Mips::ULHu:
       I->dump();
-      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K0).addOperand(I->getOperand(1)).addImm(1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K1).addOperand(I->getOperand(1)).addImm(1);
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LBu)).addOperand(I->getOperand(0)).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
       if(MCid.getOpcode() == Mips::LHu || MCid.getOpcode() == Mips::ULHu)
-        BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LBu)).addReg(Mips::K1).addReg(Mips::K0).addOperand(I->getOperand(2));
+        BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LBu)).addReg(Mips::K1).addReg(Mips::K1).addOperand(I->getOperand(2));
       else
-        BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LB)).addReg(Mips::K1).addReg(Mips::K0).addOperand(I->getOperand(2));
+        BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LB)).addReg(Mips::K1).addReg(Mips::K1).addOperand(I->getOperand(2));
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SLL)).addReg(Mips::K1).addReg(Mips::K1).addImm(8);
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::OR)).addOperand(I->getOperand(0)).addOperand(I->getOperand(0)).addReg(Mips::K1);
       break;
@@ -113,8 +113,9 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SB)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SRA)).addReg(Mips::K1).addOperand(I->getOperand(0)).addImm(8);
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ANDi)).addReg(Mips::K1).addReg(Mips::K1).addImm(0xff);
-      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K0).addOperand(I->getOperand(1)).addImm(1);
-      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SB)).addReg(Mips::K1).addReg(Mips::K0).addOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addOperand(I->getOperand(1)).addOperand(I->getOperand(1)).addImm(1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SB)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addOperand(I->getOperand(1)).addOperand(I->getOperand(1)).addImm(-1);
       break;
     //case Mips::ULW:
     //unfold to four bytes load operations

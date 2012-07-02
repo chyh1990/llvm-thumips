@@ -1,14 +1,22 @@
 /* we allocate exception vectors in ram statically
    so we can trap exceptions as soon as possible
  */
+#include <asm/regdef.h>
+#include <asm/mipsregs.h>
 
  #define RVECENT(f,n) \
   b f; nop
 #define XVECENT(f, n) \
   b f; nop
 
+
 /* must be 4K alignment */
 .section .ramexv
+
+.extern ramReserved
+.extern ramExcHandle_tlbmiss
+.extern ramExcHandle_general
+
 .global __exception_vector
 __exception_vector:
   RVECENT(ramExcHandle_tlbmiss,0) 
@@ -147,18 +155,4 @@ __exception_vector_end:
 	 * 128 * 8 == 1024 == 0x400
 	 * so this is address R_VEC+0x400 == 0xbfc00400
 	 */
-# +0x000: R4000 tlbmiss vector
-ramExcHandle_tlbmiss:
-  b ramExcHandle_tlbmiss
-  nop
 
-ramReserved:
-  b ramReserved
-  nop
-
-# +0x180: R4000 general vector
-.extern test_trap
-ramExcHandle_general:
-  la $t9, test_trap
-  jal $t9
-  nop

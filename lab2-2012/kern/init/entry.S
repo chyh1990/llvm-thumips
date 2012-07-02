@@ -18,6 +18,16 @@ kernel_entry:
 
 	.align 4
 reset:
+  /* from u-boot */
+	/* Clear watch registers */
+	mtc0	$zero, CP0_WATCHLO
+	mtc0	$zero, CP0_WATCHHI
+
+	/* WP(Watch Pending), SW0/1 should be cleared */
+	mtc0	$zero, CP0_CAUSE
+  /* clear SR(ERL), which is 1 after reset */
+	mtc0	$zero, CP0_STATUS
+
   jal 1f
   nop
   .word _gp

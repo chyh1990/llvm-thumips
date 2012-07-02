@@ -24,7 +24,7 @@ CFLAGS	:= -fno-builtin -nostdlib  -nostdinc
 CTYPE	:= c S
 
 LD      := $(GCCPREFIX)ld
-AS      := $(GCCPREFIX)as -EL -g -mips32 -xgot
+AS      := $(GCCPREFIX)as -EL -g -mips32
 LDFLAGS	+= -nostdlib
 
 OBJCOPY := $(GCCPREFIX)objcopy
