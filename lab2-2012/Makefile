@@ -45,64 +45,64 @@ ZIP		:= gzip
 
 OBJDIR	:= obj
 BINDIR	:= bin
+SRCDIR  := kern
+DEPDIR  := dep
 
-
-
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# include kernel/user
-
-INCLUDE	+= libs/
-
-#CFLAGS	+= $(addprefix -I,$(INCLUDE))
-
-LIBDIR	+= libs
-
-
-# -------------------------------------------------------------------
-# kernel
-
-$(kernel): $(KOBJS) tools/kernel.ld
 
 MODULES   := init libs debug driver trap mm sync
-SRC_DIR   := $(addprefix kern/,$(MODULES))
-BUILD_DIR := $(addprefix obj/,$(MODULES))
+SRC_DIR   := $(addprefix $(SRCDIR)/,$(MODULES))
+BUILD_DIR := $(addprefix $(OBJDIR)/,$(MODULES))
+DEP_DIR   := $(addprefix $(DEPDIR)/,$(MODULES))
+VPATH     += $(SRC_DIR)
 
 SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.c))
-OBJ       := $(patsubst kern/%.c,obj/%.o,$(SRC))
+OBJ       := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 ASMSRC    := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.S))
-OBJ       += $(patsubst kern/%.S,obj/%.o,$(ASMSRC))
+OBJ       += $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(ASMSRC))
 INCLUDES  := $(addprefix -I,$(SRC_DIR))
 
-vpath %.c $(SRC_DIR)
-vpath %.S $(SRC_DIR)
+DEPENDS := $(patsubst $(SRCDIR)/%.c, $(DEPDIR)/%.d, $(SRC))
 
-#	$(CC) $(INCLUDES) -EL -G0 -c -nostdlib -nostdinc -fno-builtin  $$< -o $$@
-define make-goal
-$1/%.o: %.c
-	$(THUMIPSCC) "$(INCLUDES) $(CFLAGS)"  $$<  $$@
-
-$1/%.o: %.S
-	$(CLANG) $(INCLUDES) -D__ASSEMBLY__ -E $$< | $(AS) -o $$@
-
-endef
+MAKEDEPEND = $(CLANG) -M $(CFLAGS) $(INCLUDES) -o $(DEPDIR)/$*.d $<
+df = $(DEPDIR)/$*
+#vpath %.c $(SRC_DIR)
+#vpath %.S $(SRC_DIR)
 
 .PHONY: all checkdirs clean 
 
+$(shell mkdir -p $(DEP_DIR))
+
 all: checkdirs obj/ucore-kernel
 
-
-obj/ucore-kernel: $(OBJ) tools/kernel.ld
+obj/ucore-kernel:   $(OBJ) tools/kernel.ld
 	$(LD) -nostdlib -n -G 0 -static -T tools/kernel.ld $(OBJ) -o $@
 
+$(DEPDIR)/%.d: $(SRCDIR)/%.c
+	@echo DEP $<
+	@set -e; rm -f $@; \
+		$(CLANG) -MM -MT "$(OBJDIR)/$*.o $@" $(CFLAGS) $(INCLUDES) $< > $@; \
 
-checkdirs: $(BUILD_DIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	$(THUMIPSCC) "$(INCLUDES) $(CFLAGS)"  $<  $@
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.S
+	$(CLANG) $(INCLUDES) -D__ASSEMBLY__ -E $< | $(AS) -o $@
+
+checkdirs: $(BUILD_DIR) $(DEP_DIR)
 
 $(BUILD_DIR):
+	@mkdir -p $@
+
+$(DEP_DIR):
 	@mkdir -p $@
 
 clean:
 	@rm -rf $(BUILD_DIR)
 
-$(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))
+ifneq ($(MAKECMDGOALS),clean)
+-include $(DEPENDS)
+endif
+
+
 
 

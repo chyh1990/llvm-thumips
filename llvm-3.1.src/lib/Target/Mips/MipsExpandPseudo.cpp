@@ -245,6 +245,7 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
     }
 
     // delete original instr
+    I->dump();
     MBB.erase(I++);
     Changed = true;
   }
