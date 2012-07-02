@@ -146,6 +146,43 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
 
     //  break;
     case Mips::LWL:
+      /*
+       * addiu k1, $s, offset
+       * andi k0, $k1, 3
+       * andiu k1, 3
+       * subu k0, k1, k0
+       * sll k0, k0, 3
+       * nor k1, $0, $0
+       * sllv k1, k1, k0
+       * nor k1, k1, k1
+       * and $t, $t, k1
+       * nor k0, k1, k1
+       * addiu k1, $s, offset
+       * nor k1, k1
+       * ori k1, k1, 3
+       * nor k1, k1, k1
+       * lw k1, offset($s)
+       * and k1, k1, k0
+       * or $t, $t, k1
+       */
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ANDi)).addReg(Mips::K0).addReg(Mips::K1).addImm(3);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K1).addReg(Mips::ZERO).addImm(3);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SUBu)).addReg(Mips::K0).addReg(Mips::K1).addReg(Mips::K0);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SLL)).addReg(Mips::K0).addReg(Mips::K0).addImm(3);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOR)).addReg(Mips::K1).addReg(Mips::ZERO).addReg(Mips::ZERO);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SLLV)).addReg(Mips::K1).addReg(Mips::K1).addReg(Mips::K0);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOR)).addReg(Mips::K1).addReg(Mips::K1).addReg(Mips::K1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::AND)).addOperand(I->getOperand(0)).addOperand(I->getOperand(0)).addReg(Mips::K1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOR)).addReg(Mips::K0).addReg(Mips::K1).addReg(Mips::K1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOR)).addReg(Mips::K1).addReg(Mips::K1).addReg(Mips::K1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ORi)).addReg(Mips::K1).addReg(Mips::K1).addImm(3);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOR)).addReg(Mips::K1).addReg(Mips::K1).addReg(Mips::K1);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::LW)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::AND)).addReg(Mips::K1).addReg(Mips::K1).addReg(Mips::K0);
+      BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::OR)).addOperand(I->getOperand(0)).addOperand(I->getOperand(0)).addReg(Mips::K1);
+      break;
     case Mips::LWR:
     case Mips::SWL:
     case Mips::SWR:
@@ -175,8 +212,10 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
     //case Mips::NOP:
     
 
+    //rotr(v) is a macro?
     case Mips::ROTR:
     case Mips::ROTRV:
+
     case Mips::EXT:
     case Mips::INS:
     case Mips::RDHWR:

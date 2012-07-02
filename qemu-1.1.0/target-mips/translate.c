@@ -12115,23 +12115,25 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
         }
         break;
         //TODO
-#ifndef THU_MIPS_CPU
     case OPC_CP0:
         check_cp0_enabled(ctx);
         op1 = MASK_CP0(ctx->opcode);
         switch (op1) {
         case OPC_MFC0:
         case OPC_MTC0:
+#ifndef THU_MIPS_CPU
         case OPC_MFTR:
         case OPC_MTTR:
 #if defined(TARGET_MIPS64)
         case OPC_DMFC0:
         case OPC_DMTC0:
 #endif
+#endif /*THU_MIPS_CPU */
 #ifndef CONFIG_USER_ONLY
             gen_cp0(env, ctx, op1, rt, rd);
 #endif /* !CONFIG_USER_ONLY */
             break;
+#ifndef THU_MIPS_CPU
         case OPC_C0_FIRST ... OPC_C0_LAST:
 #ifndef CONFIG_USER_ONLY
             gen_cp0(env, ctx, MASK_C0(ctx->opcode), rt, rd);
@@ -12197,13 +12199,14 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
             check_insn(env, ctx, ISA_MIPS32R2);
             gen_store_srsgpr(rt, rd);
             break;
+#endif /* !THU_MIPS_CPU cp0*/
         default:
             MIPS_INVAL("cp0");
+            PRINT_ERR_INSTR("cp0");
             generate_exception(ctx, EXCP_RI);
             break;
         }
         break;
-#endif /* !THU_MIPS_CPU */
     case OPC_ADDI: /* Arithmetic with immediate opcode */
     case OPC_ADDIU:
          gen_arith_imm(env, ctx, op, rt, rs, imm);
@@ -12265,10 +12268,12 @@ static void decode_opc (CPUMIPSState *env, DisasContext *ctx, int *is_branch)
         check_insn(env, ctx, ISA_MIPS3 | ISA_MIPS32);
         /* Treat as NOP. */
         break;
+#ifndef THU_MIPS_CPU
     case OPC_PREF:
         check_insn(env, ctx, ISA_MIPS4 | ISA_MIPS32);
         /* Treat as NOP. */
         break;
+#endif
 
 #ifndef THU_MIPS_CPU
     /* Floating point (COP1). */

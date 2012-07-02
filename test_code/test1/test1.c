@@ -21,7 +21,7 @@ int foo(int a,int b)
   return a*2+b;
 }
 
-#define UART 0x1fd003f8
+#define UART 0xbfd003f8
 volatile unsigned char *uart = (unsigned char*)UART;
 
 void init_uart()
