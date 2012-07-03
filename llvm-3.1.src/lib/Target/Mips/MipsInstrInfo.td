@@ -847,7 +847,7 @@ let usesCustomInserter = 1 in {
 
 /// Arithmetic Instructions (ALU Immediate)
 def ADDiu   : ArithLogicI<0x09, "addiu", add, simm16, immSExt16, CPURegs>;
-def ADDi    : ArithOverflowI<0x08, "addi", add, simm16, immSExt16, CPURegs>;
+//def ADDi    : ArithOverflowI<0x08, "addi", add, simm16, immSExt16, CPURegs>;
 def SLTi    : SetCC_I<0x0a, "slti", setlt, simm16, immSExt16, CPURegs>;
 def SLTiu   : SetCC_I<0x0b, "sltiu", setult, simm16, immSExt16, CPURegs>;
 def ANDi    : ArithLogicI<0x0c, "andi", and, uimm16, immZExt16, CPURegs>;

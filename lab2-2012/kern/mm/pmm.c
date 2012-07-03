@@ -121,7 +121,7 @@ enable_paging(void) {
 static void
 boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, uintptr_t pa, uint32_t perm) {
     assert(PGOFF(la) == PGOFF(pa));
-    size_t n = ROUNDUP(size + PGOFF(la), PGSIZE) / PGSIZE;
+    size_t n = ROUNDUP(size + PGOFF(la), PGSIZE) >> PGSHIFT;
     la = ROUNDDOWN(la, PGSIZE);
     pa = ROUNDDOWN(pa, PGSIZE);
     for (; n > 0; n --, la += PGSIZE, pa += PGSIZE) {

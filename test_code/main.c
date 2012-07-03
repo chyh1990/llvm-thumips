@@ -41,11 +41,13 @@ int main() {
   return 0;
 }
 */
+int mul(int a, int b){ 
+  int c = a * b;
+  return c;
+}
 
 int main() {
-  int i = 1;
-  i += 10;
-  if(i)
-    i = 23;
+  int a =32, b = 23;
+  a = mul(a,b);
   return 0;
 }

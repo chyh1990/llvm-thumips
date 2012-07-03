@@ -60,6 +60,7 @@ OBJ       := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 ASMSRC    := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.S))
 OBJ       += $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(ASMSRC))
 INCLUDES  := $(addprefix -I,$(SRC_DIR))
+INCLUDES  += -I$(SRCDIR)/include
 
 DEPENDS := $(patsubst $(SRCDIR)/%.c, $(DEPDIR)/%.d, $(SRC))
 
@@ -80,7 +81,7 @@ obj/ucore-kernel:   $(OBJ) tools/kernel.ld
 $(DEPDIR)/%.d: $(SRCDIR)/%.c
 	@echo DEP $<
 	@set -e; rm -f $@; \
-		$(CLANG) -MM -MT "$(OBJDIR)/$*.o $@" $(CFLAGS) $(INCLUDES) $< > $@; \
+		$(CLANG) -MM -MT "$(OBJDIR)/$*.o $@" $(CFLAGS) $(INCLUDES) $< > $@; 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(THUMIPSCC) "$(INCLUDES) $(CFLAGS)"  $<  $@
@@ -98,6 +99,7 @@ $(DEP_DIR):
 
 clean:
 	@rm -rf $(BUILD_DIR)
+
 
 ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPENDS)

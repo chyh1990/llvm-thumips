@@ -79,9 +79,11 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SW)).addOperand(I->getOperand(0))
         .addReg(Mips::K0).addOperand(I->getOperand(2));
       break;*/
+      /*  
     case Mips::B:
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::BGEZ)).addReg(Mips::ZERO).addOperand(I->getOperand(0));
       break;
+      */
     //stupid byte operations and half word operations
     //it seems that lb and lbu will be implemented ?
     //case Mips::LB:
@@ -229,9 +231,7 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
     case Mips::MTLO:
     case Mips::MFHI:
     case Mips::MFLO:
-    case Mips::LEA_ADDiu:
-
-
+    //case Mips::LEA_ADDiu:
       I->dump();
       ++I;
       continue;
