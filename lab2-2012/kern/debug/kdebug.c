@@ -10,10 +10,6 @@
 
 #define STACKFRAME_DEPTH 20
 
-extern const struct stab __STAB_BEGIN__[];  // beginning of stabs table
-extern const struct stab __STAB_END__[];    // end of stabs table
-extern const char __STABSTR_BEGIN__[];      // beginning of string table
-extern const char __STABSTR_END__[];        // end of string table
 
 
 /* *
@@ -37,7 +33,9 @@ print_kerninfo(void) {
     cprintf("  end\t0x");
     printhex((unsigned int)end);
     cprintf(" (phys)\n");
-//cprintf("Kernel executable memory footprint: %dKB\n", (end - kern_init + 1023)>>10);
+    cprintf("Kernel executable memory footprint: ");
+    printbase10( (end - etext + 1023)>>10 );
+    cprintf("KB\n");
 }
 
 /* *

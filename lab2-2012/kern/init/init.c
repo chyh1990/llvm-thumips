@@ -8,6 +8,7 @@
 #include <clock.h>
 #include <intr.h>
 #include <pmm.h>
+#include <thumips_tlb.h>
 
 void setup_exception_vector()
 {
@@ -17,11 +18,12 @@ void setup_exception_vector()
       &__exception_vector_end - &__exception_vector);
 }
 
-
 void __noreturn
 kern_init(void) {
     //setup_exception_vector();
+    tlb_invalidate_all();
 
+    pic_init();                 // init interrupt controller
     cons_init();                // init the console
 
     const char *message = "(THU.CST) os is loading ...\n\n";
@@ -35,10 +37,12 @@ kern_init(void) {
 
     pmm_init();                 // init physical memory management
 
-    pic_init();                 // init interrupt controller
 
     clock_init();               // init clock interrupt
     intr_enable();              // enable irq interrupt
+
+    //*(int*)(0x00124) = 0x432;
+    //asm volatile("divu $1, $1, $1");
 
     /* do nothing */
     while (1);

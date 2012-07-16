@@ -65,17 +65,18 @@ INCLUDES  += -I$(SRCDIR)/include
 DEPENDS := $(patsubst $(SRCDIR)/%.c, $(DEPDIR)/%.d, $(SRC))
 
 MAKEDEPEND = $(CLANG) -M $(CFLAGS) $(INCLUDES) -o $(DEPDIR)/$*.d $<
-df = $(DEPDIR)/$*
 #vpath %.c $(SRC_DIR)
 #vpath %.S $(SRC_DIR)
 
 .PHONY: all checkdirs clean 
 
-$(shell mkdir -p $(DEP_DIR))
-
 all: checkdirs obj/ucore-kernel
 
+$(shell mkdir -p $(DEP_DIR))
+
+
 obj/ucore-kernel:   $(OBJ) tools/kernel.ld
+	@echo LINK
 	$(LD) -nostdlib -n -G 0 -static -T tools/kernel.ld $(OBJ) -o $@
 
 $(DEPDIR)/%.d: $(SRCDIR)/%.c
@@ -84,7 +85,7 @@ $(DEPDIR)/%.d: $(SRCDIR)/%.c
 		$(CLANG) -MM -MT "$(OBJDIR)/$*.o $@" $(CFLAGS) $(INCLUDES) $< > $@; 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(THUMIPSCC) "$(INCLUDES) $(CFLAGS)"  $<  $@
+	/opt/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-elf-gcc -c -EL -G0 $(INCLUDES) $(CFLAGS)  $<  -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.S
 	$(CLANG) $(INCLUDES) -D__ASSEMBLY__ -E $< | $(AS) -o $@
@@ -98,7 +99,8 @@ $(DEP_DIR):
 	@mkdir -p $@
 
 clean:
-	@rm -rf $(BUILD_DIR)
+	-rm -rf $(BUILD_DIR)
+	-rm -rf $(DEPDIR)
 
 
 ifneq ($(MAKECMDGOALS),clean)

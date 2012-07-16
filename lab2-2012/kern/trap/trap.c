@@ -11,7 +11,6 @@
 #include <kdebug.h>
 
 #define TICK_NUM 100
-#define PRINT_HEX(str,x) {cprintf(str);printhex((unsigned int)x);cprintf("\n");}
 
 #define GET_CAUSE_EXCODE(x)   ( ((x) & CAUSEF_EXCCODE) >> CAUSEB_EXCCODE)
 
@@ -80,11 +79,39 @@ print_trapframe(struct trapframe *tf) {
     cputchar('\n');
 }
 
+static void interrupt_handler(struct trapframe *tf)
+{
+  extern clock_int_handler(void*);
+  extern serial_int_handler(void*);
+  int i;
+  for(i=0;i<8;i++){
+    if(tf->tf_cause & (1<<(CAUSEB_IP+i))){
+      switch(i){
+        case TIMER0_IRQ:
+          clock_int_handler(NULL);
+          break;
+        case COM1_IRQ:
+          serial_int_handler(NULL);
+          break;
+        default:
+          print_trapframe(tf);
+          panic("Unknown interrupt!");
+      }
+    }
+  }
+
+}
 
 static void
 trap_dispatch(struct trapframe *tf) {
   int code = GET_CAUSE_EXCODE(tf->tf_cause);
   switch(code){
+    case EX_IRQ:
+      interrupt_handler(tf);
+      break;
+    case EX_TLBL:
+    case EX_TLBS:
+      break;
     case EX_RI:
       print_trapframe(tf);
       while(1);

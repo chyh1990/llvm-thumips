@@ -40,15 +40,18 @@ typedef size_t ppn_t;
  * Rounding operations (efficient when n is a power of 2)
  * Round down to the nearest multiple of n
  * */
+/*  
 #define ROUNDDOWN(a, n) ({                                          \
             size_t __a = (size_t)(a);                               \
             (typeof(a))(__a - __a % (n));                           \
         })
+*/
+#define ROUNDDOWN_2N(a,n) (( ((size_t)a) >> (n) ) << n)
 
 /* Round up to the nearest multiple of n */
-#define ROUNDUP(a, n) ({                                            \
+#define ROUNDUP_2N(a, n) ({                                            \
             size_t __n = (size_t)(n);                               \
-            (typeof(a))(ROUNDDOWN((size_t)(a) + __n - 1, __n));     \
+            (typeof(a))(ROUNDDOWN_2N((size_t)(a) + (1<<__n) - 1, __n));     \
         })
 
 /* Return the offset of 'member' relative to the beginning of a struct type */

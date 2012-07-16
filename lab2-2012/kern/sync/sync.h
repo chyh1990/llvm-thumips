@@ -4,11 +4,15 @@
 #include <thumips.h>
 #include <intr.h>
 #include <mmu.h>
+#include <asm/mipsregs.h>
 
 static inline bool
 __intr_save(void) {
-    //panic("todo");
+  if (read_c0_status() & ST0_IE) {
     return 0;
+  }
+  intr_disable();
+  return 1;
 }
 
 static inline void

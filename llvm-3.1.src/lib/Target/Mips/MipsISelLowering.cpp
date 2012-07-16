@@ -36,6 +36,8 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include <stdio.h>
+
 using namespace llvm;
 
 // If I is a shifted mask, set the size (Size) and the first bit of the
@@ -285,10 +287,13 @@ bool MipsTargetLowering::allowsUnalignedMemoryAccesses(EVT VT) const {
   case MVT::i64:
   case MVT::i32:
   case MVT::i16:
+    //printf("return true\n");
     return true;
   case MVT::f32:
+    //printf("f32\n");
     return Subtarget->hasMips32r2Or64();
   default:
+    //printf("false\n");
     return false;
   }
 }
@@ -858,11 +863,58 @@ static MachineBasicBlock* ExpandCondMov(MachineInstr *MI, MachineBasicBlock *BB,
   return BB;
 }
 
+static MachineBasicBlock* ExpandLH(MachineInstr *MI, MachineBasicBlock *BB,
+                                  DebugLoc dl,
+                                  const TargetInstrInfo *TII,
+                                  unsigned Opc) {
+  const BasicBlock *LLVM_BB = BB->getBasicBlock();
+  MachineFunction::iterator It = BB;
+  ++It;
+
+  MachineBasicBlock *thisMBB = BB;
+  MachineFunction *F = BB->getParent();
+  MachineBasicBlock *copy0MBB = F->CreateMachineBasicBlock(LLVM_BB);
+  MachineBasicBlock *sinkMBB = F->CreateMachineBasicBlock(LLVM_BB);
+  F->insert(It, copy0MBB);
+  F->insert(It, sinkMBB);
+
+  sinkMBB->splice(sinkMBB->begin(), BB,
+                  llvm::next(MachineBasicBlock::iterator(MI)),
+                  BB->end());
+  sinkMBB->transferSuccessorsAndUpdatePHIs(BB);
+  BB->addSuccessor(copy0MBB);
+  BB->addSuccessor(sinkMBB);
+
+  BB = copy0MBB;
+
+  BB->addSuccessor(sinkMBB);
+
+  BB = sinkMBB;
+
+  BuildMI(*BB, BB->begin(), dl,
+          TII->get(Mips::ADDiu)).addReg(MI->getOperand(0).getReg())
+          .addReg(MI->getOperand(0).getReg()).addImm(12);
+
+  //MI->eraseFromParent();
+
+  return BB;
+}
+
 MachineBasicBlock *
 MipsTargetLowering::EmitInstrWithCustomInserter(MachineInstr *MI,
                                                 MachineBasicBlock *BB) const {
    const TargetInstrInfo *TII = getTargetMachine().getInstrInfo();
   DebugLoc dl = MI->getDebugLoc();
+
+
+  unsigned BinOpcode = MI->getOpcode();
+  MachineFunction *MF = BB->getParent();
+  MachineRegisterInfo &RegInfo = MF->getRegInfo();
+  const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+
+  unsigned tmpReg1, tmpReg2, tmpReg3;
+
+
   switch (MI->getOpcode()) {
   default: llvm_unreachable("Unexpected instr type to insert");
            /*  
@@ -875,6 +927,25 @@ MipsTargetLowering::EmitInstrWithCustomInserter(MachineInstr *MI,
   case Mips::MOVF_D:
     return ExpandCondMov(MI, BB, dl, Subtarget, TII, true, Mips::BC1T);
     */
+  case Mips::LHu:
+  case Mips::LH:
+    //tmpReg1 = RegInfo.createVirtualRegister(RC);
+    printf("hello world.\n");
+    return ExpandLH(MI, BB, dl, TII,Mips::LH);
+    /*
+    tmpReg2 = RegInfo.createVirtualRegister(RC);
+    BuildMI(*BB, MI, dl, TII->get(Mips::ADDiu)).addReg(tmpReg2).addReg(MI->getOperand(1).getReg()).addImm(1);
+    BuildMI(*BB, MI, dl, TII->get(Mips::LBu)).addReg(MI->getOperand(0).getReg()).addReg(MI->getOperand(1).getReg()).addOperand(MI->getOperand(2));
+    if(MI->getOpcode() == Mips::LHu)
+      BuildMI(*BB, MI, dl, TII->get(Mips::LBu)).addReg(tmpReg2).addReg(tmpReg2).addOperand(MI->getOperand(2));
+    else
+      BuildMI(*BB, MI, dl, TII->get(Mips::LB)).addReg(tmpReg2).addReg(tmpReg2).addOperand(MI->getOperand(2));
+    BuildMI(*BB, MI, dl, TII->get(Mips::SLL)).addReg(tmpReg2).addReg(tmpReg2).addImm(8);
+    BuildMI(*BB, MI, dl, TII->get(Mips::OR)).addReg(MI->getOperand(0).getReg()).addReg(MI->getOperand(0).getReg()).addReg(tmpReg2);
+    */
+    //MI->eraseFromParent();
+    //return BB;
+
   case Mips::MOVZ_I_I:
     return ExpandCondMov(MI, BB, dl, Subtarget, TII, false, Mips::BNE);
   case Mips::MOVN_I_I:

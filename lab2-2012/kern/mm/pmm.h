@@ -55,7 +55,7 @@ void print_pgdir(void);
             if (__m_kva < KERNBASE) {                                   \
                 panic("PADDR called with invalid kva %08lx", __m_kva);  \
             }                                                           \
-            __m_kva - KERNBASE;                                         \
+            __m_kva ;                                         \
         })
 
 /* *
@@ -68,7 +68,7 @@ void print_pgdir(void);
             if (__m_ppn >= npage) {                                     \
                 panic("KADDR called with invalid pa %08lx", __m_pa);    \
             }                                                           \
-            (void *) (__m_pa + KERNBASE);                               \
+            (void *) (__m_pa);                               \
         })
 
 extern struct Page *pages;
@@ -81,7 +81,7 @@ page2ppn(struct Page *page) {
 
 static inline uintptr_t
 page2pa(struct Page *page) {
-    return page2ppn(page) << PGSHIFT;
+    return KERNBASE + (page2ppn(page) << PGSHIFT);
 }
 
 static inline struct Page *

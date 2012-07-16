@@ -40,7 +40,12 @@ outw(uint32_t port, uint32_t data) {
     *((volatile uintptr_t *) port) = data;
 }
 
+/* board specification */
+#define ISA_BASE        0xbfd00000
+#define COM1            (ISA_BASE+0x3F8)
+#define COM1_IRQ        4
 
+#define TIMER0_IRQ       7
 
 #endif /* !__LIBS_THUMIPS_H__ */
 

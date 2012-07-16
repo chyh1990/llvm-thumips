@@ -15,7 +15,7 @@ void __noreturn __panic(const char *file, int line, const char *fmt, ...);
 #define assert(x)                                       \
     do {                                                \
         if (!(x)) {                                     \
-            panic("assertion failed: %s", #x);          \
+            panic("assertion failed: "#x);          \
         }                                               \
     } while (0)
 

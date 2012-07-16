@@ -60,6 +60,17 @@ bool MipsExpandPseudo::runOnMachineFunction(MachineFunction& F) {
 bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
 
   bool Changed = false;
+
+/*
+  MachineFunction *MF = MBB.getParent();
+  MachineRegisterInfo &RegInfo = MF->getRegInfo();
+
+  const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+  
+  unsigned tmp1 = RegInfo.createVirtualRegister(RC);
+  unsigned tmp2 = RegInfo.createVirtualRegister(RC);
+*/
+
   for (MachineBasicBlock::iterator I = MBB.begin(); I != MBB.end();) {
     const MCInstrDesc& MCid = I->getDesc();
 
@@ -94,6 +105,8 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::NOP));
       break;
 
+
+      /*
     case Mips::LHu:
     case Mips::LH:
     case Mips::ULH:
@@ -119,6 +132,9 @@ bool MipsExpandPseudo::runOnMachineBasicBlock(MachineBasicBlock& MBB) {
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::SB)).addReg(Mips::K1).addOperand(I->getOperand(1)).addOperand(I->getOperand(2));
       BuildMI(MBB, I, I->getDebugLoc(), TII->get(Mips::ADDiu)).addOperand(I->getOperand(1)).addOperand(I->getOperand(1)).addImm(-1);
       break;
+      */
+
+
     //case Mips::ULW:
     //unfold to four bytes load operations
       /*

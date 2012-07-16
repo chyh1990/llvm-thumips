@@ -13,8 +13,6 @@ delay(void) {
 }
 
 /***** Serial I/O code *****/
-#define ISA_BASE        0xbfd00000
-#define COM1            (ISA_BASE+0x3F8)
 
 #define COM_RX          0       // In:  Receive buffer (DLAB=0)
 #define COM_TX          0       // Out: Transmit buffer (DLAB=0)
@@ -45,17 +43,23 @@ serial_init(void) {
     if(serial_exists)
       return ;
     serial_exists = 1;
-    //TODO
-    *(uart+1) = 0;
-    *(uart+3) = 0x80;
-    *(uart+0) = 0x03;
-    *(uart+1) = 0x00;
-    *(uart+3) = 0x03;
-    *(uart+2) = 0xc7;
-    *(uart+4) = 0x0b;
+    // Turn off the FIFO
+    outb(COM1 + COM_FCR, 0);
 
-    if (serial_exists) {
-    }
+    // Set speed; requires DLAB latch
+    outb(COM1 + COM_LCR, COM_LCR_DLAB);
+    outb(COM1 + COM_DLL, (uint8_t) (115200 / 9600));
+    outb(COM1 + COM_DLM, 0);
+
+    // 8 data bits, 1 stop bit, parity off; turn off DLAB latch
+    outb(COM1 + COM_LCR, COM_LCR_WLEN8 & ~COM_LCR_DLAB);
+
+    // No modem controls
+    outb(COM1 + COM_MCR, 0);
+    // Enable rcv interrupts
+    outb(COM1 + COM_IER, COM_IER_RDI);
+
+    pic_enable(COM1_IRQ);
 }
 
 
@@ -75,6 +79,29 @@ serial_putc(int c) {
         serial_putc_sub(' ');
         serial_putc_sub('\b');
     }
+}
+
+/* serial_proc_data - get data from serial port */
+static int
+serial_proc_data(void) {
+    if (!(inb(COM1 + COM_LSR) & COM_LSR_DATA)) {
+        return -1;
+    }
+    int c = inb(COM1 + COM_RX);
+    if (c == 127) {
+        c = '\b';
+    }
+    return c;
+}
+
+
+void serial_int_handler(void *opaque)
+{
+  unsigned char id = inb(COM1+COM_IIR);
+  if(id & 0x01)
+    return ;
+  int c = serial_proc_data();
+  cons_putc(c);
 }
 
 /* *
@@ -106,19 +133,6 @@ cons_intr(int (*proc)(void)) {
             }
         }
     }
-}
-
-/* serial_proc_data - get data from serial port */
-static int
-serial_proc_data(void) {
-    if (!(inb(COM1 + COM_LSR) & COM_LSR_DATA)) {
-        return -1;
-    }
-    int c = inb(COM1 + COM_RX);
-    if (c == 127) {
-        c = '\b';
-    }
-    return c;
 }
 
 /* serial_intr - try to feed input characters from serial port */
